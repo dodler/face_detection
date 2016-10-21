@@ -1,3 +1,0 @@
-[console_scripts]
-annotate.py = xbob.flandmark.script.annotate:main
-
