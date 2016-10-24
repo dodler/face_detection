@@ -5,6 +5,13 @@ import dlib
 import numpy as np
 
 
+def get_matrix_angle(m):
+    x = atan2(m[2][1], m[2][2])
+    y = atan2(-m[2][0], sqrt(pow(m[2][1], 2) + pow(m[2][2], 2)))
+    z = atan2(m[1][0], m[0][0])
+    return x, y, z
+
+
 class FaceAngleDetector:
     predictor_path = '/home/lyan/PycharmProjects/face_detection/shape_predictor_68_face_landmarks.dat'
     detector = dlib.get_frontal_face_detector()
@@ -33,13 +40,6 @@ class FaceAngleDetector:
 
     # Camera internals
 
-
-    def get_matrix_angle(m):
-        x = atan2(m[2][1], m[2][2])
-        y = atan2(-m[2][0], sqrt(pow(m[2][1], 2) + pow(m[2][2], 2)))
-        z = atan2(m[1][0], m[0][0])
-        return x, y, z
-
     def get_face_angle_solve_pnp(self, image, points):
         size = image.shape
 
@@ -53,14 +53,24 @@ class FaceAngleDetector:
              [0, 0, 1]], dtype="double"
         )
 
+        # 2D image points. If you change the image, you need to change vector
+        image_points = np.array([
+            (points[30].x, points[30].y),  # Nose tip
+            (points[8].x, points[8].y),  # Chin
+            (points[36].x, points[36].y),  # Left eye left corner
+            (points[45].x, points[45].y),  # Right eye right corne
+            (points[60].x, points[60].y),  # Left Mouth corner
+            (points[64].x, points[64].y)  # Right mouth corner
+        ], dtype="double")
+
         dist_coeffs = np.zeros((4, 1))  # Assuming no lens distortion
         (success, rotation_vector, translation_vector) = cv2.solvePnP(FaceAngleDetector.model_points,
-                                                                      points, camera_matrix,
+                                                                      image_points, camera_matrix,
                                                                       dist_coeffs,
                                                                       flags=cv2.SOLVEPNP_ITERATIVE)
 
         matrix = cv2.Rodrigues(rotation_vector)
-        return self.get_matrix_angle(matrix[0])
+        return get_matrix_angle(matrix[0])
 
     def get_angle_by_2_points(point1, point2):
         width = abs(point1.x - point2.x)
@@ -118,12 +128,6 @@ class FaceAngleDetector:
 
         return nose_top / nose_bot
 
-    def get_matrix_angle(m):
-        x = atan2(m[2][1], m[2][2])
-        y = atan2(-m[2][0], sqrt(pow(m[2][1], 2) + pow(m[2][2], 2)))
-        z = atan2(m[1][0], m[0][0])
-        return x, y, z
-
     # this method returns face angles according to
     # special custom facial ratios
 
@@ -163,14 +167,10 @@ class FaceAngleDetector:
 
         return nose_angle, eye_angle, rotation
 
-    BASE_WIDTH = 320.0 # todo implement in more fast manner
-
     def get_face_angle(self, image):
 
         dets = FaceAngleDetector.detector(image, 1)
         result = []
-
-        width = 300
 
         for d in dets:
             shape = FaceAngleDetector.predictor(image, d)
@@ -181,3 +181,4 @@ class FaceAngleDetector:
                 result.append(self.face_angle(shape.parts()))
 
         return result
+

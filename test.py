@@ -2,7 +2,8 @@ import cv2
 
 from face_angle_detector import FaceAngleDetector
 
-angle_detector = FaceAngleDetector(FaceAngleDetector.METHOD_SOLVE_CUSTOM_POINTS)
+# angle_detector = FaceAngleDetector(FaceAngleDetector.METHOD_SOLVE_CUSTOM_POINTS)
+angle_detector = FaceAngleDetector(FaceAngleDetector.METHOD_SOLVE_PNP)
 
 # Camera 0 is the integrated web cam on my netbook
 camera_port = 0
@@ -13,6 +14,9 @@ ramp_frames = 30
 # Now we can initialize the camera capture object with the cv2.VideoCapture class.
 # All it needs is the index to a camera port.
 camera = cv2.VideoCapture(camera_port)
+
+camera.set(3, 320)
+camera.set(4, 240)
 
 
 # Captures a single image from the camera and returns it in PIL format
