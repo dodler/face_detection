@@ -1,4 +1,4 @@
-from math import atan2, sqrt, atan
+from math import atan2, sqrt, atan, pi
 
 import cv2
 import dlib
@@ -6,10 +6,11 @@ import numpy as np
 
 
 def get_matrix_angle(m):
+    rad_to_deg = 57.2958
     x = atan2(m[2][1], m[2][2])
     y = atan2(-m[2][0], sqrt(pow(m[2][1], 2) + pow(m[2][2], 2)))
     z = atan2(m[1][0], m[0][0])
-    return x, y, z
+    return (pi-x) * rad_to_deg, y * rad_to_deg, z * rad_to_deg
 
 
 class FaceAngleDetector:
@@ -69,8 +70,20 @@ class FaceAngleDetector:
                                                                       dist_coeffs,
                                                                       flags=cv2.SOLVEPNP_ITERATIVE)
 
+        (nose_end_point2D, jacobian) = cv2.projectPoints(np.array([(0.0, 0.0, 1000.0)]), rotation_vector,
+                                                         translation_vector,
+                                                         camera_matrix, dist_coeffs)
+
+        for p in image_points:
+            cv2.circle(image, (int(p[0]), int(p[1])), 3, (0, 0, 255), -1)
+            #
+            p1 = (int(image_points[0][0]), int(image_points[0][1]))
+            p2 = (int(nose_end_point2D[0][0][0]), int(nose_end_point2D[0][0][1]))
+
+            cv2.line(image, p1, p2, (255, 0, 0), 2)
+
         matrix = cv2.Rodrigues(rotation_vector)
-        return get_matrix_angle(matrix[0])
+        return get_matrix_angle(matrix[0]), rotation_vector
 
     def get_angle_by_2_points(point1, point2):
         width = abs(point1.x - point2.x)
@@ -167,6 +180,25 @@ class FaceAngleDetector:
 
         return nose_angle, eye_angle, rotation
 
+    def get_face_points(self, image):
+        dets = FaceAngleDetector.detector(image,1)
+        result = []
+        for d in dets:
+            result.append(FaceAngleDetector.predictor(image, d))
+
+        return result
+
+    def get_shape(self, image):
+        dets = FaceAngleDetector.detector(image,1)
+        result = []
+        for d in dets:
+            shape = FaceAngleDetector.predictor(image, d)
+
+            result.append(self.get_face_angle_solve_pnp(image, shape.parts()))
+            result.append(self.face_angle(shape.parts()))
+
+        return result
+
     def get_face_angle(self, image):
 
         dets = FaceAngleDetector.detector(image, 1)
@@ -175,10 +207,12 @@ class FaceAngleDetector:
         for d in dets:
             shape = FaceAngleDetector.predictor(image, d)
 
-            if self.method == FaceAngleDetector.METHOD_SOLVE_PNP:
-                result.append(self.get_face_angle_solve_pnp(image, shape.parts()))
-            elif self.method == FaceAngleDetector.METHOD_SOLVE_CUSTOM_POINTS:
-                result.append(self.face_angle(shape.parts()))
+            result.append(self.get_face_angle_solve_pnp(image, shape.parts()))
+            result.append(self.face_angle(shape.parts()))
 
         return result
+
+    def fit_image(self, image):
+        from picture_affine_invertion import affine_reverse
+        return affine_reverse(image, self.get_shape(image))
 
