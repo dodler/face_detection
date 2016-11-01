@@ -31,6 +31,7 @@ class Validator:
     @staticmethod
     def init_angle_detector(path):
         json_str = ''
+
         with open(path) as f:
             for line in f.readlines():
                 json_str += line
@@ -43,7 +44,13 @@ class Validator:
         print points_path
 
         detector = dlib.get_frontal_face_detector()
-        predictor = dlib.shape_predictor(points_path)
+        try:
+            predictor = dlib.shape_predictor(points_path)
+        except Exception as e:
+            print 'File not found, trying relative path'
+            dir = os.path.dirname(__file__)
+            filename = os.path.join(dir, points_path)
+            predictor = dlib.shape_predictor(filename)
 
         if settings['method'] == FaceAngleDetector.METHOD_SOLVE_PNP:
             angle_detector = FaceAngleDetector(FaceAngleDetector.METHOD_SOLVE_PNP, detector, predictor)
@@ -62,9 +69,9 @@ class Validator:
     @staticmethod
     def validate(face):
 
-        if ~hasattr(Validator, 'angle_detector'):
+        if not hasattr(Validator, 'angle_detector'):
             dir = os.path.dirname(__file__)
-            filename = os.path.join(dir, '../../data/settings.json')
+            filename = os.path.join(dir, '../data/settings.json')
             Validator.init_angle_detector(filename)
 
 
