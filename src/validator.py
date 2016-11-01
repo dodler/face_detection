@@ -1,4 +1,8 @@
+# @author Lyan Artyom
+# more info in README file
+
 import json
+import os
 
 import dlib
 
@@ -57,6 +61,13 @@ class Validator:
 
     @staticmethod
     def validate(face):
+
+        if ~hasattr(Validator, 'angle_detector'):
+            dir = os.path.dirname(__file__)
+            filename = os.path.join(dir, '../../data/settings.json')
+            Validator.init_angle_detector(filename)
+
+
         angles = Validator.angle_detector.get_face_angle(face)
 
         if len(angles) == 0:

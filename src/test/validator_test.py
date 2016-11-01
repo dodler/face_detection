@@ -1,8 +1,12 @@
+import os
+
 import cv2
 
 from src.validator import Validator
 
-Validator.init_angle_detector('/home/lyan/PycharmProjects/face_detection/data/settings.json')
+dir = os.path.dirname(__file__)
+filename = os.path.join(dir, '../../data/settings.json')
+Validator.init_angle_detector(filename)
 
 
 camera_port = 0

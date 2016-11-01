@@ -1,0 +1,7 @@
+You can find usage example in validator_test.py
+
+Validator class initiation can be execute with first
+validate method usage. If you want to perform class
+initialization with your own settings file use
+init_angle_detector(path) method, where path is
+path to settings file in JSON format.

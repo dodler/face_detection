@@ -2,7 +2,6 @@ import dlib
 
 
 # main class that performs prediction
-from src.FacialPointsMethod import FacialPointsMethod
 from src.SolvePnpMethod import SolvePnpMethod
 
 
@@ -14,7 +13,6 @@ class FaceAngleDetector:
 
     def __init__(self, method, detector, predictor):
         self.method = method
-        # FaceAngleDetector.predictor_path = '../data/shape_predictor_68_face_landmarks.dat'
         FaceAngleDetector.detector = detector
         FaceAngleDetector.predictor = predictor
 
@@ -25,10 +23,6 @@ class FaceAngleDetector:
 
         for d in dets:
             shape = FaceAngleDetector.predictor(image, d)
-
-            if self.method == FaceAngleDetector.METHOD_SOLVE_PNP:
-                result.append(SolvePnpMethod.get_angles(image, shape.parts()))
-            elif self.method == FaceAngleDetector.METHOD_FACIAL_LANDMARKS:
-                result.append(FacialPointsMethod.get_angles(shape.parts()))
+            result.append(SolvePnpMethod.get_angles(image, shape.parts()))
 
         return result
