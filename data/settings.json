@@ -1,0 +1,7 @@
+{
+  "landmarks_path":"/home/lyan/PycharmProjects/face_detection/data/shape_predictor_68_face_landmarks.dat",
+  "method":"solve_pnp",
+  "yaw_threshold":30,
+  "pitch_threshold":30,
+  "roll_threshold":30
+}

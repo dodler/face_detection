@@ -1,0 +1,6 @@
+JSON format is used due to simplicity of its usage in python.
+method field should be either solve_pnp or facial_landmarks.
+solve_pnp method is used by default.
+further fields contain threshold for yaw, pitch and roll angles
+for face rotation. By default, these values are set as 30.
+landmark_path contain path for landmark points dat file.
